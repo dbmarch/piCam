@@ -67,3 +67,9 @@ if you want to copy files up to  GCP storage
 gsutil cp filename gs://yourBucketName
 ```
 
+
+##  Additional python libraries
+ pip install opencv-python
+
+## Info on accessing camera from flask
+https://blog.miguelgrinberg.com/post/flask-video-streaming-revisited
