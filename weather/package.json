@@ -1,0 +1,15 @@
+{
+  "name": "weather",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "firebase": "^4.10.1",
+    "firebase-tools": "^3.17.4"
+  }
+}
