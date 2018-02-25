@@ -1,7 +1,6 @@
 // Cloned from  https://github.com/alvarowolfx/weather-station-gcp-mongoose-os
 document.addEventListener('DOMContentLoaded', function() {
  const db = firebase.database();
-
   // Create listeners
   const devicesRef = db.ref('/devices');
 
