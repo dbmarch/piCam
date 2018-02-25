@@ -3,27 +3,9 @@ const admin = require('firebase-admin');
 const bigquery = require('@google-cloud/bigquery')();
 const cors = require('cors')({ origin: true });
 
-var firebase = require('firebase');
+admin.initializeApp(functions.config().firebase);
 
-
-// Copy and paste this into your JavaScript code to initialize the Firebase SDK.
-// You will also need to load the Firebase SDK.
-// See https://firebase.google.com/docs/web/setup for more details.
-
-var defaultApp  = firebase.initializeApp({
-  "apiKey": "AIzaSyCWx9adhU-OsHNTk7lNuQHt4vJkplmRYgM",
-  "databaseURL": "https://oci-iot-ml.firebaseio.com",
-  "storageBucket": "oci-iot-ml.appspot.com",
-  "authDomain": "oci-iot-ml.firebaseapp.com",
-  "messagingSenderId": "32484548601",
-  "projectId": "oci-iot-ml"
-});
-console.log(defaultApp.name);  // "[DEFAULT]"
-
-//admin.initializeApp(functions.config().firebase);
-
-//const db = admin.database();
-const db = defaultApp.database();
+const db = admin.database();
 /**
  * Receive data from pubsub, then 
  * Write telemetry raw data to bigquery
@@ -58,8 +40,8 @@ exports.receiveTelemetry = functions.pubsub
     }
 
     return Promise.all([
-      insertIntoBigquery(data) //,
-//      updateCurrentDataFirebase(data)
+      insertIntoBigquery(data),
+      updateCurrentDataFirebase(data)
     ]);
   });
 
