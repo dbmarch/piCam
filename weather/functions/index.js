@@ -20,11 +20,6 @@ var defaultApp  = firebase.initializeApp({
 });
 console.log(defaultApp.name);  // "[DEFAULT]"
 
-// You can retrieve services via the defaultApp variable...
-//var defaultStorage = firebase.storage();
-//var defaultDatabase = firebase.database();
-
-
 //admin.initializeApp(functions.config().firebase);
 
 //const db = admin.database();
@@ -41,6 +36,7 @@ exports.receiveTelemetry = functions.pubsub
     const message = event.data.json;
 
     const deviceId = attributes['deviceId'];
+    console.log (deviceId);
 
     const data = {
       humidity: message.h,
@@ -48,6 +44,8 @@ exports.receiveTelemetry = functions.pubsub
       deviceId: deviceId,
       timestamp: event.timestamp
     };
+
+    console.log (data);
 
     if (
       message.hum < 0 ||
@@ -60,8 +58,8 @@ exports.receiveTelemetry = functions.pubsub
     }
 
     return Promise.all([
-      insertIntoBigquery(data),
-      updateCurrentDataFirebase(data)
+      insertIntoBigquery(data) //,
+//      updateCurrentDataFirebase(data)
     ]);
   });
 
@@ -69,6 +67,7 @@ exports.receiveTelemetry = functions.pubsub
  * Maintain last status in firebase
 */
 function updateCurrentDataFirebase(data) {
+  console.log ('updateCurrentDataFirebase');
   return db.ref(`/devices/${data.deviceId}`).set({
     humidity: data.humidity,
     temperature: data.temperature,
@@ -83,8 +82,9 @@ function insertIntoBigquery(data) {
   // TODO: Make sure you set the `bigquery.datasetname` Google Cloud environment variable.
   const dataset = bigquery.dataset(functions.config().bigquery.datasetname);
   // TODO: Make sure you set the `bigquery.tablename` Google Cloud environment variable.
-  const table = dataset.table(functions.config().bigquery.tablename);
-
+  const table = dataset.table(functions.config().bigquery.tablename); 
+  console.log ('inserting data into bigquery' );
+  console.log (data);
   return table.insert(data);
 }
 
@@ -110,6 +110,8 @@ exports.getReportData = functions.https.onRequest((req, res) => {
     group by data_hora
     order by data_hora
   `;
+
+  console.log ('querying 7 days...');
 
   return bigquery
     .query({
