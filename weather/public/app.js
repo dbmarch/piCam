@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <i class="material-icons" aria-hidden="true">rss_feed</i>
         </span>
         <span class="mdc-list-item__text">
-            Station #${key}
+            Station: <strong>${key}</strong>
             <span class="mdc-list-item__text__secondary">
                 ${deviceState.temperature}  C°/${deviceState.humidity} %
             </span>
