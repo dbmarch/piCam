@@ -1,6 +1,6 @@
 // Cloned from  https://github.com/alvarowolfx/weather-station-gcp-mongoose-os
 document.addEventListener('DOMContentLoaded', function() {
-  const db = firebase.database();
+ const db = firebase.database();
 
   // Create listeners
   const devicesRef = db.ref('/devices');
@@ -18,12 +18,12 @@ document.addEventListener('DOMContentLoaded', function() {
       li.className = 'mdc-list-item';
       li.innerHTML = `
         <span class="mdc-list-item__start-detail grey-bg" role="presentation">
-            <i class="material-icons" aria-hidden="true">cloud</i>
+            <i class="material-icons" aria-hidden="true">rss_feed</i>
         </span>
         <span class="mdc-list-item__text">
             Station #${key}
             <span class="mdc-list-item__text__secondary">
-                ${deviceState.temp} C°/${deviceState.humidity} %
+                ${deviceState.temperature}  C°/${deviceState.humidity} %
             </span>
             <span class="mdc-list-item__text__secondary">
                 Last updated: ${new Date(

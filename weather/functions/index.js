@@ -20,20 +20,20 @@ exports.receiveTelemetry = functions.pubsub
     const deviceId = attributes['deviceId'];
     console.log (deviceId);
 
-    const data = {
+   const data = {
       humidity: message.h,
       temperature: message.t,
       deviceId: deviceId,
       timestamp: event.timestamp
     };
 
-    console.log (data);
+//    console.log (data);
 
     if (
-      message.hum < 0 ||
-      message.hum > 100 ||
-      message.temp > 100 ||
-      message.temp < -50
+      message.h < 0 ||
+      message.h > 100 ||
+      message.t > 100 ||
+      message.t < -50
     ) {
       // Validate and do nothing
       return;
@@ -50,6 +50,8 @@ exports.receiveTelemetry = functions.pubsub
 */
 function updateCurrentDataFirebase(data) {
   console.log ('updateCurrentDataFirebase');
+//  console.log (data);
+//  console.log ('***');
   return db.ref(`/devices/${data.deviceId}`).set({
     humidity: data.humidity,
     temperature: data.temperature,
@@ -65,7 +67,7 @@ function insertIntoBigquery(data) {
   const dataset = bigquery.dataset(functions.config().bigquery.datasetname);
   // TODO: Make sure you set the `bigquery.tablename` Google Cloud environment variable.
   const table = dataset.table(functions.config().bigquery.tablename); 
-  console.log ('inserting data into bigquery' );
+  console.log ('BigQuery: '+ functions.config().bigquery.datasetname + ' table: ' + functions.config().bigquery.tablename  );
   console.log (data);
   return table.insert(data);
 }
@@ -102,7 +104,7 @@ exports.getReportData = functions.https.onRequest((req, res) => {
     })
     .then(result => {
       const rows = result[0];
-
+      console.log (rows);
       cors(req, res, () => {
         res.json(rows);
       });
