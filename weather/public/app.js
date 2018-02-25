@@ -19,12 +19,12 @@ document.addEventListener('DOMContentLoaded', function() {
         <span class="mdc-list-item__start-detail grey-bg" role="presentation">
             <i class="material-icons" aria-hidden="true">rss_feed</i>
         </span>
-        <span class="mdc-list-item__text">
+        <span class="mdc-list-item__text addPadding">
             Station: <strong>${key}</strong>
-            <span class="mdc-list-item__text__secondary">
-                ${deviceState.temperature}  C°/${deviceState.humidity} %
+            <span class="mdc-list-item__text__secondary addPadding">
+                ${deviceState.temperature}  C° / ${deviceState.humidity} %
             </span>
-            <span class="mdc-list-item__text__secondary">
+            <span class="mdc-list-item__text__secondary largeGap">
                 Last updated: ${new Date(
                   deviceState.lastTimestamp
                 ).toLocaleString()}
