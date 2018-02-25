@@ -1,126 +1,130 @@
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const bigquery = require('@google-cloud/bigquery')();
-const cors = require('cors')({ origin: true });
+document.addEventListener('DOMContentLoaded', function() {
+  const db = firebase.database();
 
-var firebase = require('firebase');
+  // Create listeners
+  const devicesRef = db.ref('/devices');
 
+  // Register functions that update with last devices state
+  devicesRef.on('value', function(snapshot) {
+    let devices = snapshot.val();
+    console.log(devices);
+    let devicesEl = document.getElementById('devices');
+    devicesEl.innerHTML = '';
 
-// Copy and paste this into your JavaScript code to initialize the Firebase SDK.
-// You will also need to load the Firebase SDK.
-// See https://firebase.google.com/docs/web/setup for more details.
+    for (var key in devices) {
+      let deviceState = devices[key];
+      let li = document.createElement('li');
+      li.className = 'mdc-list-item';
+      li.innerHTML = `
+        <span class="mdc-list-item__start-detail grey-bg" role="presentation">
+            <i class="material-icons" aria-hidden="true">cloud</i>
+        </span>
+        <span class="mdc-list-item__text">
+            Station #${key}
+            <span class="mdc-list-item__text__secondary">
+                ${deviceState.temp} C°/${deviceState.humidity} %
+            </span>
+            <span class="mdc-list-item__text__secondary">
+                Last updated: ${new Date(
+                  deviceState.lastTimestamp
+                ).toLocaleString()}
+            </span>
+        </span>
+      `;
 
-var defaultApp  = firebase.initializeApp({
-  "apiKey": "AIzaSyCWx9adhU-OsHNTk7lNuQHt4vJkplmRYgM",
-  "databaseURL": "https://oci-iot-ml.firebaseio.com",
-  "storageBucket": "oci-iot-ml.appspot.com",
-  "authDomain": "oci-iot-ml.firebaseapp.com",
-  "messagingSenderId": "32484548601",
-  "projectId": "oci-iot-ml"
-});
-console.log(defaultApp.name);  // "[DEFAULT]"
-
-// You can retrieve services via the defaultApp variable...
-//var defaultStorage = firebase.storage();
-//var defaultDatabase = firebase.database();
-
-
-//admin.initializeApp(functions.config().firebase);
-
-//const db = admin.database();
-const db = defaultApp.database();
-/**
- * Receive data from pubsub, then 
- * Write telemetry raw data to bigquery
- * Maintain last data on firebase realtime database
- */
-exports.receiveTelemetry = functions.pubsub
-  .topic('telemetry-topic')
-  .onPublish(event => {
-    const attributes = event.data.attributes;
-    const message = event.data.json;
-
-    const deviceId = attributes['deviceId'];
-
-    const data = {
-      humidity: message.hum,
-      temperature: message.temperature,
-      deviceId: deviceId,
-      timestamp: event.timestamp
-    };
-
-    if (
-      message.hum < 0 ||
-      message.hum > 100 ||
-      message.temp > 100 ||
-      message.temp < -50
-    ) {
-      // Validate and do nothing
-      return;
+      devicesEl.appendChild(li);
     }
-
-    return Promise.all([
-      insertIntoBigquery(data),
-      updateCurrentDataFirebase(data)
-    ]);
   });
 
-/** 
- * Maintain last status in firebase
-*/
-function updateCurrentDataFirebase(data) {
-  return db.ref(`/devices/${data.deviceId}`).set({
-    humidity: data.humidity,
-    temperature: data.temperature,
-    lastTimestamp: data.timestamp
-  });
-}
-
-/**
- * Store all the raw data in bigquery
- */
-function insertIntoBigquery(data) {
-  // TODO: Make sure you set the `bigquery.datasetname` Google Cloud environment variable.
-  const dataset = bigquery.dataset(functions.config().bigquery.datasetname);
-  // TODO: Make sure you set the `bigquery.tablename` Google Cloud environment variable.
-  const table = dataset.table(functions.config().bigquery.tablename);
-
-  return table.insert(data);
-}
-
-/**
- * Query bigquery with the last 7 days of data
- * HTTPS endpoint to be used by the webapp
- */
-exports.getReportData = functions.https.onRequest((req, res) => {
-  const table = '`weather-station-iot-170004.weather_station.raw_data`';
-
-  const query = `
-    SELECT 
-      TIMESTAMP_TRUNC(data.timestamp, HOUR, 'America/Cuiaba') data_hora,
-      avg(data.temp) as avg_temp,
-      avg(data.humidity) as avg_hum,
-      min(data.temp) as min_temp,
-      max(data.temp) as max_temp,
-      min(data.humidity) as min_hum,
-      max(data.humidity) as max_hum,
-      count(*) as data_points      
-    FROM ${table} data
-    WHERE data.timestamp between timestamp_sub(current_timestamp, INTERVAL 7 DAY) and current_timestamp()
-    group by data_hora
-    order by data_hora
-  `;
-
-  return bigquery
-    .query({
-      query: query,
-      useLegacySql: false
-    })
-    .then(result => {
-      const rows = result[0];
-
-      cors(req, res, () => {
-        res.json(rows);
-      });
-    });
+  fetchReportData();
 });
+
+const reportDataUrl = '/getReportData';
+
+function fetchReportData() {
+  try {
+    fetch(reportDataUrl)
+      .then(res => res.json())
+      .then(rows => {
+        var maxTempData = rows.map(row => row.max_temp);
+        var avgTempData = rows.map(row => row.avg_temp);
+        var minTempData = rows.map(row => row.min_temp);
+
+        var maxHumData = rows.map(row => row.max_hum);
+        var avgHumData = rows.map(row => row.avg_hum);
+        var minHumData = rows.map(row => row.min_hum);
+
+        var labels = rows.map(row => row.data_hora.value);
+
+        buildLineChart(
+          'tempLineChart',
+          'Temperature in C°',
+          labels,
+          '#E64D3D',
+          avgTempData
+        );
+        buildLineChart(
+          'humLineChart',
+          'Humidity in %',
+          labels,
+          '#0393FA',
+          avgHumData
+        );
+      });
+  } catch (e) {
+    alert('Error getting report data');
+  }
+}
+
+// Constroi um gráfico de linha no elemento (el) com a descrição (label) e os
+// dados passados (data)
+function buildLineChart(el, label, labels, color, avgData) {
+  const elNode = document.getElementById(el);
+  new Chart(elNode, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: label,
+          data: avgData,
+          borderWidth: 1,
+          fill: true,
+          spanGaps: true,
+          lineTension: 0.2,
+          backgroundColor: color,
+          borderColor: '#3A4250',
+          pointRadius: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        xAxes: [
+          {
+            type: 'time',
+            distribution: 'series',
+            ticks: {
+              source: 'labels'
+            }
+          }
+        ],
+        yAxes: [
+          {
+            scaleLabel: {
+              display: true,
+              labelString: label
+            },
+            ticks: {
+              stepSize: 0.5
+            }
+          }
+        ]
+      }
+    }
+  });
+
+  const progressEl = document.getElementById(el + '_progress');
+  progressEl.remove();
+}
