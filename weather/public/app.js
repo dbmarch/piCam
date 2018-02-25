@@ -1,3 +1,4 @@
+// Cloned from  https://github.com/alvarowolfx/weather-station-gcp-mongoose-os
 document.addEventListener('DOMContentLoaded', function() {
   const db = firebase.database();
 
@@ -76,8 +77,6 @@ function fetchReportData() {
   }
 }
 
-// Constroi um gráfico de linha no elemento (el) com a descrição (label) e os
-// dados passados (data)
 function buildLineChart(el, label, labels, color, avgData) {
   const elNode = document.getElementById(el);
   new Chart(elNode, {
