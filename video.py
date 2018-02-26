@@ -152,9 +152,9 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
 
 
 def checkFile ():
-   print ('tick')
+#   print ('tick')
    if os.path.exists(outputFile):
-      print (outputFile + ' written')
+      print (outputFile + ' ready')
 
 
 def detect_labels_script(filename):
