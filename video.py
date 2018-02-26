@@ -4,6 +4,10 @@
 # Source code from the official PiCamera package
 # http://picamera.readthedocs.io/en/latest/recipes2.html#web-streaming
 
+#import google.cloud.vision
+#from google.cloud import vision
+#from google-cloud-vision import type
+
 import sys
 import io
 import picamera
@@ -108,11 +112,28 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
         self.send_response(302)
         self.send_header('Location', '/index.html')
         self.end_headers()
+        detect_labels(filename)
 
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
+
+def detect_labels(filename):
+    """Detects labels in the file."""
+    client = vision.ImageAnnotatorClient()
+
+    with io.open(filename, 'rb') as image_file:
+        content = image_file.read()
+
+    image = types.Image(content=content)
+
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+    print('Labels:')
+
+    for label in labels:
+        print(label.description)
 
 
 port = 8000
