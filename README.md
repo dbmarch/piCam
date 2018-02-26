@@ -216,3 +216,13 @@ apt install -y python python-pip
 
 # Install Docker Compose from pip
 pip install docker-compose
+
+
+
+### For the GOOGLE API's you need to have credentials 
+
+Create a key for a service account on GCP.   It will then download a keyfile in json format.
+
+You will need to have this environment variable set to the key.   I renamed mine and put it in a gcpkey directory.
+
+> export GOOGLE_APPLICATION_CREDENTIALS="/home/pi/gcpkey/gcp.json"

@@ -1,16 +1,23 @@
 // Imports the Google Cloud client library
 const vision = require('@google-cloud/vision');
+const fs = require('fs');
+
 
 // Creates a client
 const client = new vision.ImageAnnotatorClient();
-var fname = '..images/image.jpg';
+var fname = '../image.jpg';
+var fOutput  = '../output.json';
 
 if ( process.argv.length >= 3) {
 //   console.log ( process.argv[2] );
    fname = process.argv[2];
 }
+if (process.argv.length >=4) {
+   fOutput = process.argv[3];
+}
 
-console.log ("Processing: " + fname);
+
+console.log ("Processing: " + fname + "   Output: " + fOutput );
 
 var answer = [];
 
@@ -28,8 +35,13 @@ client
      answer.push(found); 
      console.log (' [ ' + parseFloat(Number(label.score) * 100).toFixed(2) + ' % ]   ' + label.description );
     });
-  
 //  console.log (answer);
+  
+    fs.writeFileSync (fOutput, JSON.stringify(answer), 'utf8', function(err) {
+       if (err) {
+           console.log(err);
+       }
+    });
   })
   .catch(err => {
     console.error('ERROR:', err);
