@@ -142,7 +142,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
         self.send_header('Location', '/index.html')
         self.end_headers()
         if os.path.exists(outputFile) and os.path.isfile(outputFile):
-           printf ('delete the file')
+           print ('delete the file')
            os.remove(outputFile)
         detect_labels_script(filename)
 
